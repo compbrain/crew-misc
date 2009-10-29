@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>CCIS Print Queue | {{queuename}}</title>
+  </head>
+  <body background="#EAEAEA"> 
+    <center><h1>{{queuename}}</h1></center>
+
+    <h3>Pending</h3>
+    <table>
+      <tr><th>Queue</th><th>User</th><th>Job Name</th><th>Status</th></tr>
+      {% for job in queue.PendingJobs %}
+      <tr><td colspan=4>{{job}}</td></tr>
+      {% endfor %}
+    </table>
+    <h3>Recently Completed</h3>
+    <table>
+      <tr><th>Queue</th><th>User</th><th>Job Name</th><th>Status</th></tr>
+    {% for job in queue.FinishedJobs|slice:":5" %}
+      <tr><td colspan=4>{{job}}</td></tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
