@@ -1,23 +1,36 @@
 #!/usr/bin/python
+import os
+import cups
 import cupsext
 
 class Job(object):
   STATUSMAP = {8:'aborted', 7:'canceled', 6:'stopped', 5:'processing',
                3:'pending', 4:'held', 9:'completed'}
 
-  def __init__(self, dest, id, size, state, title, user):
+  def __init__(self, dest, id, size, state, title, user, cups=None):
     self.dest = dest
-    self.physicaldest = None
-    self.GetPhysicalDest()
     self.id = int(id)
     self.size = size
     self.state = state
     self.title = title
     self.user = user
+    self.cups = cups
+    self.cupsattributes = None
+    if not self.cups:
+      self.cups = cups.Connection()
+
+  def GetDict(self):
+    return {'id':self.id,
+            'state':self.GetStatusText(),
+            'physicaldest':self.GetActualDestination(),
+            'title':self.GetRealTitle(), 
+            'owner':self.user,
+            'finisher':self.GetFinisher()
+           }
 
   def __str__(self):
     return ('%s [%s] %s by %s is %s'
-            % (self.dest, self.GetPhysicalDest(), self.GetRealTitle(),
+            % (self.dest, self.GetActualDestination(), self.GetRealTitle(),
                self.user, self.GetStatusText()))
 
   def __repr__(self):
@@ -25,6 +38,21 @@ class Job(object):
 
   def __cmp__(self, other):
     return cmp(self.id, other.id)
+
+  def GetCUPSAttributes(self):
+    if not self.cupsattributes:
+      self.cupsattributes = self.cups.getJobAttributes(self.id)
+    return self.cupsattributes
+
+  def GetActualDestination(self):
+    try:
+      uri = self.GetCUPSAttributes()['job-actual-printer-uri']
+      return self.GetPhysicalDest(os.path.basename(uri))
+    except:
+      return self.dest
+
+  def GetOutputPrinterName(self):
+    return self.GetPhysicalDest(given=self.GetActualDestination())
 
   def IsWindowsJob(self):
     return 'smbprn' in self.title
@@ -47,36 +75,54 @@ class Job(object):
   def GetStatusText(self):
     return self.STATUSMAP[self.state]
 
-  def GetPhysicalDest(self):
-    if self.physicaldest is None:
-      self.physicaldest = self.dest
-      for x in ['simplex', 'duplex']:
-        self.physicaldest = self.physicaldest.replace('-%s' % x, '')
-    return self.physicaldest
+  def GetFinisher(self):
+    for x in ['simplex', 'duplex']:
+      if x in self.dest:
+        return x
+    return 'plain'
+
+  def GetPhysicalDest(self, given=None):
+    if given is None:
+      given = self.dest
+    if self.GetFinisher() is not 'plain':
+      given = given.replace('-%s' % self.GetFinisher(), '')
+    return given
 
   @classmethod
-  def GetFromCUPS(cls, cj):
+  def GetFromCUPS(cls, cj, cups=None):
     """cj = cupsjob."""
-    return cls(cj.dest, cj.id, cj.size, cj.state, cj.title, cj.user)
+    return cls(cj.dest, cj.id, cj.size, cj.state, cj.title, cj.user, cups=cups)
 
   @classmethod
-  def GetJobs(cls, completed=False):
-    return [cls.GetFromCUPS(x) for x in cupsext.getJobs(0, int(completed))]
+  def GetJobs(cls, completed=False, cups=None):
+    return [cls.GetFromCUPS(x, cups=cups)
+            for x in cupsext.getJobs(0, int(completed))]
 
   @classmethod
-  def GetJobsForPrinter(cls, printer, completed=False):
-    return [job for job in cls.GetJobs(completed) 
+  def GetJobsForPrinter(cls, printer, cups=None, completed=False):
+    return [job for job in cls.GetJobs(completed, cups=cups) 
             if job.GetPhysicalDest() == printer]
 
 class PrintQueue(object):
   def __init__(self, printer):
+    self.cups = cups.Connection()
     self.alljobs = None
     self.printer = printer
     self.GetJobsForPrinter()
+    self.AddClassMembers()
 
-  def GetJobsForPrinter(self):
-    self.alljobs = Job.GetJobsForPrinter(self.printer, completed=True)
-    self.alljobs += Job.GetJobsForPrinter(self.printer, completed=False)
+  def AddClassMembers(self):
+    if self.printer in self.cups.getClasses():
+      for x in self.cups.getClasses()[self.printer]:
+        self.GetJobsForPrinter(x)
+
+  def GetJobsForPrinter(self, printer=None):
+    if not printer:
+      printer = self.printer
+    self.alljobs = Job.GetJobsForPrinter(printer, cups=self.cups,
+                                         completed=True)
+    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
+                                          completed=False)
     self.alljobs.sort()
     self.alljobs.reverse()
 
@@ -86,13 +132,17 @@ class PrintQueue(object):
   def FinishedJobs(self):
     return [job for job in self.alljobs if job.IsComplete()]
 
+  def GetPublishedJobs(self, completecount=10):
+    l = self.PendingJobs() + self.FinishedJobs()[:completecount]
+    l.sort()
+    l.reverse()
+    return l
+
+  def GetPublishedDict(self, completecount=10):
+    return [x.GetDict() for x in self.GetPublishedJobs(completecount)]
 
 if __name__ == '__main__':
-  p = PrintQueue('renoir')
-  print '=== Pending Jobs ==='
-  for job in p.PendingJobs():
-    print job
-
-  print '=== Last 5 Completed Jobs ==='
-  for job in p.FinishedJobs()[:5]:
+  p = PrintQueue('102')
+  print '=== Jobs ==='
+  for job in p.GetPublishedJobs():
     print job
