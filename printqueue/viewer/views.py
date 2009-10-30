@@ -5,18 +5,21 @@ import json
 import printqueue
 
 def GetBaseQueueName(name):
-  for x in ['duplex', 'simplex']:
-    if '-%s' % x in name:
-      name = name.replace('-%s' % x, '')
-  return name
+  """
+  >>> GetBaseQueueName('reiniger-duplex')
+  'reiniger'
+  >>> GetBaseQueueName('reiniger-simplex')
+  'reiniger'
+  >>> GetBaseQueueName('reiniger')
+  'reiniger'
+  """
+  return name.split('-')[0]
 
-def Index(self):
-  return render_to_response('printindex.html', {})
 
-def QueueView(self, name):
+def QueueView(self, name, template_name='viewer/queueview.html'):
   name = GetBaseQueueName(name)
   p = printqueue.PrintQueue(name)
-  return render_to_response('queueview.html', {'queuename':name, 'queue':p})
+  return render_to_response(template_name, {'queuename':name, 'queue':p})
 
 
 def JSONQueueView(self, name):
@@ -24,5 +27,3 @@ def JSONQueueView(self, name):
   p = printqueue.PrintQueue(name)
   return HttpResponse(json.dumps(p.GetPublishedDict()),
                       mimetype='application/json')
-
-

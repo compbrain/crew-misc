@@ -8,8 +8,5 @@ urlpatterns = patterns('',
     # Example:
     (r'^static/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.STATIC_DOC_ROOT}),
-    (r'^$', 'printqueue.viewer.views.Index'),
-    (r'^printqueue/(.*)/json/$', 'printqueue.viewer.views.JSONQueueView'),
-    (r'^printqueue/(.*)/$', 'printqueue.viewer.views.QueueView'),
-
+    (r'^', include('printqueue.viewer.urls')),
 )
