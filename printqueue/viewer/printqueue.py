@@ -73,6 +73,14 @@ class Job(object):
     return self.cupsattributes
 
   def GetPhysicalDest(self, given=None):
+    """Get the queue name without its finisher component.
+
+    Args:
+       given: (string) queue name, if None, then self.dest is used.
+
+    Returns:
+       If queuename was 'hanna-duplex', 'hanna' would be returned.
+    """
     if given is None:
       given = self.dest
     if self.GetFinisher() is not 'plain':
@@ -180,7 +188,14 @@ class Job(object):
 
 
 class PrintQueue(object):
+  """Represent a CUPS print queue."""
+
   def __init__(self, name):
+    """Create a PrintQueue instance.
+
+    Args:
+       name: (string) name of the CUPS print queue.
+    """
     self.cups = cups.Connection()
     self.alljobs = []
     self.name = name
