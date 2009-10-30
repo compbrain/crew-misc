@@ -81,3 +81,7 @@ INSTALLED_APPS = (
 )
 
 STATIC_DOC_ROOT = 'static'
+try:
+  from local_settings import *
+except:
+  pass
