@@ -1,0 +1,46 @@
+/*  STATUSMAP = {8:'aborted', 7:'canceled', 6:'stopped', 5:'processing',
+                   3:'pending', 4:'held', 9:'completed'}
+*/
+
+#loadingbar {
+  display:none;
+  background-color:red;
+  color:white;
+  top:0px;
+  right:0px;
+  position:fixed;
+}
+
+td {
+  text-align: center;
+}
+tbody {
+  font-size:x-large;
+}
+.aborted {
+  background-color: #cccccc;
+}
+
+.canceled {
+  background-color: #cccccc;
+}
+
+.stopped {
+  background-color: #ff3333;
+}
+
+.processing {
+  background-color: #ffbb33;
+}
+
+.pending {
+  background-color: #eeff77;
+}
+
+.held {
+  background-color: #eeff77;
+}
+
+.completed {
+  background-color: #88ff77;
+}

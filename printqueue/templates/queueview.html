@@ -1,0 +1,22 @@
+<html>
+  <head>
+    <title>CCIS Print Queue | {{queuename}}</title>
+    <LINK href="/static/printing.css" rel="stylesheet" type="text/css">
+    <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+    <script type="text/javascript">google.load("jquery", "1.3.2");</script>
+    <script type="text/javascript">google.load("jqueryui", "1.7.2");</script>
+    <script type="text/javascript" src="/static/queueview.js"></script>
+  </head>
+  <body>
+    <div id="loadingbar">Loading...</div>
+    <center><h1>Print Queue for {{queuename}}</h1></center>
+    <table id="printjobs" width="100%">
+<thead>
+      <tr><th>ID</th><th>Destination</th><th>Queue</th><th>User</th>
+        <th>Job Name</th><th>Status</th></tr>
+</thead>
+<tbody id="joblist">
+</tbody>
+    </table>
+  </body>
+</html>

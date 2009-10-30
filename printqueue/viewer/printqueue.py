@@ -22,16 +22,16 @@ class Job(object):
   def GetDict(self):
     return {'id':self.id,
             'state':self.GetStatusText(),
-            'physicaldest':self.GetActualDestination(),
+            'physicaldest':self.GetOutputPrinterName(),
             'title':self.GetRealTitle(), 
             'owner':self.user,
-            'finisher':self.GetFinisher()
+            'finisher':self.dest,
            }
 
   def __str__(self):
-    return ('%s [%s] %s by %s is %s'
-            % (self.dest, self.GetActualDestination(), self.GetRealTitle(),
-               self.user, self.GetStatusText()))
+    return ('%d = %s [%s] %s by %s is %s'
+            % (self.id, self.GetOutputPrinterName(), self.GetFinisher(),
+               self.GetRealTitle(), self.user, self.GetStatusText()))
 
   def __repr__(self):
     return str(self)
@@ -52,7 +52,7 @@ class Job(object):
       return self.dest
 
   def GetOutputPrinterName(self):
-    return self.GetPhysicalDest(given=self.GetActualDestination())
+    return self.GetPhysicalDest(self.GetActualDestination())
 
   def IsWindowsJob(self):
     return 'smbprn' in self.title
@@ -63,11 +63,15 @@ class Job(object):
     else:
       return 'other'
 
-  def GetRealTitle(self):
+  def GetRealTitle(self, obfuscate=True, truncatecount=14):
     if self.IsWindowsJob():
-      return self.title.split(' ', 1)[1]
+      t = self.title.split(' ', 1)[1]
     else:
-      return self.title
+      t = self.title
+    if len(t) > truncatecount and obfuscate:
+      return t[:truncatecount] + '...'
+    else:
+      return t
 
   def IsComplete(self):
     return self.GetStatusText() in ['aborted', 'canceled', 'completed']
@@ -106,7 +110,7 @@ class Job(object):
 class PrintQueue(object):
   def __init__(self, printer):
     self.cups = cups.Connection()
-    self.alljobs = None
+    self.alljobs = []
     self.printer = printer
     self.GetJobsForPrinter()
     self.AddClassMembers()
@@ -119,7 +123,7 @@ class PrintQueue(object):
   def GetJobsForPrinter(self, printer=None):
     if not printer:
       printer = self.printer
-    self.alljobs = Job.GetJobsForPrinter(printer, cups=self.cups,
+    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
                                          completed=True)
     self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
                                           completed=False)
