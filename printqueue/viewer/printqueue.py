@@ -9,8 +9,10 @@ of the queue and reporting on their status and ultimate endpoints.
 __author__ = 'Will Nowak <wan@ccs.neu.edu>'
 
 import os
+import json
 import cups
 import cupsext
+import optparse
 
 
 class Job(object):
@@ -229,12 +231,24 @@ class PrintQueue(object):
     l.reverse()
     return l
 
-  def GetPublishedDict(self, completecount=10):
+  def GetPublishedDict(self, completecount):
     return [x.GetDict() for x in self.GetPublishedJobs(completecount)]
 
+  def GetPublishedJSON(self, completecount=10):
+    return json.dumps(self.GetPublishedDict(completecount))
+
+
+def GetParser():
+  parser = optparse.OptionParser()
+  parser.add_option('-c', '--count', type='int', default=10, dest='count',
+                    help='The number of jobs to print. Default=10')
+  return parser
 
 if __name__ == '__main__':
+  import sys
+  parser = GetParser()
+  options, args = parser.parse_args()
   p = PrintQueue('102')
-  print '=== Jobs for %s ===' % p.name
-  for job in p.GetPublishedJobs():
-    print job
+  sys.stdout.write('=== Jobs for %s ===\n' % p.name)
+  for job in p.GetPublishedJobs(options.count):
+    sys.stdout.write('%s\n' % job)

@@ -1,6 +1,5 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-import json
 
 import printqueue
 
@@ -25,5 +24,4 @@ def QueueView(self, name, template_name='viewer/queueview.html'):
 def JSONQueueView(self, name):
   name = GetBaseQueueName(name)
   p = printqueue.PrintQueue(name)
-  return HttpResponse(json.dumps(p.GetPublishedDict()),
-                      mimetype='application/json')
+  return HttpResponse(p.GetPublishedJSON(), mimetype='application/json')
