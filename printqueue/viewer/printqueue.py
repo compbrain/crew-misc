@@ -79,13 +79,13 @@ class Job(object):
 
   def CachedGetCUPSAttributes(self):
     """Try and get cups attributes from cache."""
-    key = 'job-attrs-%d' % self.id
+    key = 'cups-job-attrs-%d' % self.id
     mc = self.MemcacheInterface()
     if mc and mc.get(key):
       self.cupsattributes = mc.get(key)
     else:
       self.cupsattributes = self.cups.getJobAttributes(self.id)
-      if mc:
+      if mc and self.IsComplete():
         mc.set(key, self.cupsattributes)
     return self.cupsattributes
 

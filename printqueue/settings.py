@@ -82,6 +82,8 @@ INSTALLED_APPS = (
 )
 
 STATIC_DOC_ROOT = 'static'
+MEMCACHE_HOST = None # '127.0.0.1:11211'
+
 try:
   from local_settings import *
 except:
