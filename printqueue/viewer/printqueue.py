@@ -13,6 +13,9 @@ import json
 import cups
 import cupsext
 import optparse
+import memcache
+
+MEMCACHE_HOST = None
 
 
 class Job(object):
@@ -41,6 +44,7 @@ class Job(object):
     self.user = user
     self.cups = cups
     self.cupsattributes = None
+    self.memcache = None
     if not self.cups:
       self.cups = cups.Connection()
 
@@ -67,11 +71,28 @@ class Job(object):
   def __cmp__(self, other):
     """Compare this job to another by comparing ID numbers."""
     return cmp(self.id, other.id)
+  
+  def MemcacheInterface(self):
+    if MEMCACHE_HOST and not self.memcache:
+      self.memcache = memcache.Client([MEMCACHE_HOST], debug=0)
+    return self.memcache
+
+  def CachedGetCUPSAttributes(self):
+    """Try and get cups attributes from cache."""
+    key = 'job-attrs-%d' % self.id
+    mc = self.MemcacheInterface()
+    if mc and mc.get(key):
+      self.cupsattributes = mc.get(key)
+    else:
+      self.cupsattributes = self.cups.getJobAttributes(self.id)
+      if mc:
+        mc.set(key, self.cupsattributes)
+    return self.cupsattributes
 
   def GetCUPSAttributes(self):
     """Fetch cups job attributes for this job from the cups server."""
     if not self.cupsattributes:
-      self.cupsattributes = self.cups.getJobAttributes(self.id)
+      self.cupsattributes = self.CachedGetCUPSAttributes()
     return self.cupsattributes
 
   def GetPhysicalDest(self, given=None):
@@ -213,7 +234,7 @@ class PrintQueue(object):
     if not printer:
       printer = self.name
     self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
-                                         completed=True)
+                                          completed=True)
     self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
                                           completed=False)
     self.alljobs.sort()
