@@ -1,6 +1,6 @@
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-from django.config import settings
+from django.conf import settings
 
 import printqueue
 printqueue.MEMCACHE_HOST = settings.MEMCACHE_HOST
