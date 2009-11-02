@@ -26,4 +26,4 @@ def QueueView(self, name, template_name='viewer/queueview.html'):
 def JSONQueueView(self, name):
   name = GetBaseQueueName(name)
   p = printqueue.PrintQueue(name)
-  return HttpResponse(p.GetPublishedJSON(), mimetype='application/json')
+  return HttpResponse(p.GetPublishedJSON(20), mimetype='application/json')

@@ -15,6 +15,7 @@ import json
 import memcache
 import optparse
 import os
+import time
 
 MEMCACHE_HOST = None
 
@@ -25,7 +26,7 @@ class Job(object):
   STATUSMAP = {8:'aborted', 7:'canceled', 6:'stopped', 5:'processing',
                3:'pending', 4:'held', 9:'completed'}
 
-  def __init__(self, dest, id, size, state, title, user, cups=None):
+  def __init__(self, dest, id, size, state, title, user, cupsinstance=None):
     """Initialize a Job object.
 
     Args:
@@ -35,7 +36,7 @@ class Job(object):
        state: (int) job state (one of the keys in STATUSMAP)
        title: (string) job title
        user: (string) job owner
-       cups: (cups.Connection) cups connection object instance
+       cupsinstance: (cups.Connection) cups connection object instance
     """
     self.dest = dest
     self.id = int(id)
@@ -43,7 +44,7 @@ class Job(object):
     self.state = state
     self.title = title
     self.user = user
-    self.cups = cups
+    self.cups = cupsinstance
     self.cupsattributes = None
     self.memcache = None
     if not self.cups:
@@ -182,7 +183,8 @@ class Job(object):
        cj: (cupsext.Job object) job to clone
        cups: (cups.Connection) cups connection for metadata lookup
     """
-    return cls(cj.dest, cj.id, cj.size, cj.state, cj.title, cj.user, cups=cups)
+    return cls(cj.dest, cj.id, cj.size, cj.state, cj.title, cj.user,
+               cupsinstance=cups)
 
   @classmethod
   def GetJobs(cls, completed=False, cups=None):
@@ -221,23 +223,32 @@ class PrintQueue(object):
     Args:
        name: (string) name of the CUPS print queue.
     """
-    self.cups = cups.Connection()
+    self.cups = None
     self.alljobs = []
     self.name = name
     self.GetJobsForPrinter()
     self.AddClassMembers()
 
+  def CupsConnection(self):
+    try:
+      if not self.cups:
+        self.cups = cups.Connection()
+      return self.cups
+    except:
+      time.sleep(1)
+      return self.CupsConnection()
+
   def AddClassMembers(self):
-    if self.name in self.cups.getClasses():
-      for x in self.cups.getClasses()[self.name]:
+    if self.name in self.CupsConnection().getClasses():
+      for x in self.CupsConnection().getClasses()[self.name]:
         self.GetJobsForPrinter(x)
 
   def GetJobsForPrinter(self, printer=None):
     if not printer:
       printer = self.name
-    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
+    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.CupsConnection(),
                                           completed=True)
-    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.cups,
+    self.alljobs += Job.GetJobsForPrinter(printer, cups=self.CupsConnection(),
                                           completed=False)
     self.alljobs.sort()
     self.alljobs.reverse()
