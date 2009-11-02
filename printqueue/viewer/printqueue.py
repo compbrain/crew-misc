@@ -8,12 +8,13 @@ of the queue and reporting on their status and ultimate endpoints.
 
 __author__ = 'Will Nowak <wan@ccs.neu.edu>'
 
-import os
-import json
+import cgi
 import cups
 import cupsext
-import optparse
+import json
 import memcache
+import optparse
+import os
 
 MEMCACHE_HOST = None
 
@@ -53,8 +54,8 @@ class Job(object):
     return {'id':self.id,
             'state':self.GetStatusText(),
             'physicaldest':self.GetOutputPrinterName(),
-            'title':self.GetRealTitle(), 
-            'owner':self.user,
+            'title':cgi.escape(self.GetRealTitle()), 
+            'owner':cgi.escape(self.user),
             'finisher':self.dest,
            }
 
@@ -112,11 +113,12 @@ class Job(object):
 
   def GetActualDestination(self):
     """Try and get the name of the endpoint print queue for this job."""
-    try:
-      uri = self.GetCUPSAttributes()['job-actual-printer-uri']
-      return self.GetPhysicalDest(os.path.basename(uri))
-    except:
-      return self.dest
+    attrs = self.GetCUPSAttributes() #['job-actual-printer-uri']
+    if attrs and 'job-actual-printer-uri' in attrs:
+      uri = attrs['job-actual-printer-uri']
+    else:
+      uri = self.dest
+    return self.GetPhysicalDest(os.path.basename(uri))
 
   #XXX: Why do I have this here anymore?
   def GetOutputPrinterName(self):
