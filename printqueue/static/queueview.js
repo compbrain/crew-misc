@@ -40,13 +40,24 @@ function cleanUp(ids) {
   });
 }
 
+function setStatus(statuslist) {
+    statuslist.sort(function(one,two) { return one.name - two.name; });
+    var output = '';
+    $.each(statuslist, function(i, item) {
+      output += '&nbsp;&nbsp;<span class="printer-'+item.status+'">'+item.name+
+      '</span>';
+    $('#statuslist').html(output);
+    });
+}
+
 function getData() {
   var tmpdate = new Date();
   tmp = '?nocache=' + tmpdate.getTime();
   $.getJSON('json/'+tmp, function(data){
     var ids = new Array;
-    data.sort(function(one,two) { return one.id - two.id; });
-    $.each(data, function(i, item) {
+    setStatus(data.status);
+    data.jobs.sort(function(one,two) { return one.id - two.id; });
+    $.each(data.jobs, function(i, item) {
       AddJob(item);
       ids.push(item.id);
       });

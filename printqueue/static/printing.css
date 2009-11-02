@@ -11,6 +11,12 @@
   position:fixed;
 }
 
+#printerstatus {
+  text-align: center;
+  font-size:large;
+  border:1px;
+}
+
 td {
   text-align: center;
 }
@@ -48,4 +54,28 @@ tbody {
 .joblogo {
   float:left;
   vertical-align:middle;
+}
+
+/*   STATUSMAP = {1287:'busy', 3:'idle', 1290:'deactivated', 4:'processing',
+ *                5:'stopped'}
+ */
+
+.printer-deactivated {
+  background-color: #cccccc;
+}
+
+.printer-processing {
+  background-color: #ffbb33;
+}
+
+.printer-busy {
+  background-color: #eeff77;
+}
+
+.printer-stopped {
+  background-color: #eeff77;
+}
+
+.printer-idle {
+  background-color: #88ff77;
 }

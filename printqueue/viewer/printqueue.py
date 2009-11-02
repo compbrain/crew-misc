@@ -218,6 +218,9 @@ class Job(object):
 class PrintQueue(object):
   """Represent a CUPS print queue."""
 
+  STATUSMAP = {1287:'busy', 3:'idle', 1290:'deactivated', 4:'processing',
+               5:'stopped'}
+
   def __init__(self, name):
     """Create a PrintQueue instance.
 
@@ -227,6 +230,7 @@ class PrintQueue(object):
     self.cups = None
     self.alljobs = []
     self.name = name
+    self.queuenames = None
     self.GetJobsForPrinter()
     self.AddClassMembers()
 
@@ -239,10 +243,16 @@ class PrintQueue(object):
       time.sleep(1)
       return self.CupsConnection()
 
+  def AllQueueNames(self):
+    if not self.queuenames:
+      self.queuenames = [self.name]
+      if self.name in self.CupsConnection().getClasses():
+        self.queuenames += self.CupsConnection().getClasses()[self.name]
+    return self.queuenames
+
   def AddClassMembers(self):
-    if self.name in self.CupsConnection().getClasses():
-      for x in self.CupsConnection().getClasses()[self.name]:
-        self.GetJobsForPrinter(x)
+    for x in self.AllQueueNames():
+      self.GetJobsForPrinter(x)
 
   def GetJobsForPrinter(self, printer=None):
     if not printer:
@@ -270,7 +280,19 @@ class PrintQueue(object):
     return [x.GetDict() for x in self.GetPublishedJobs(completecount)]
 
   def GetPublishedJSON(self, completecount=10):
-    return json.dumps(self.GetPublishedDict(completecount))
+    j = {'jobs':self.GetPublishedDict(completecount),
+         'status':self.QueueStatus(),
+        }
+    return json.dumps(j)
+
+  def QueueStatus(self):
+    statuslist = []
+    p = cupsext.getPrinters()
+    for x in p:
+      if x.name in self.AllQueueNames():
+        statuslist.append({'name': x.name,
+                           'status':PrintQueue.STATUSMAP[x.state]})
+    return statuslist
 
 
 def GetParser():
