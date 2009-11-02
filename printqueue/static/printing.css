@@ -44,3 +44,8 @@ tbody {
 .completed {
   background-color: #88ff77;
 }
+
+.joblogo {
+  float:left;
+  vertical-align:middle;
+}

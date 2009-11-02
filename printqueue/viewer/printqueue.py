@@ -58,6 +58,7 @@ class Job(object):
             'title':cgi.escape(self.GetRealTitle()), 
             'owner':cgi.escape(self.user),
             'finisher':self.dest,
+            'source':self.GetJobSource(),
            }
 
   def __str__(self):
@@ -132,7 +133,7 @@ class Job(object):
 
   def GetJobSource(self):
     """Get a string indicating the source of this job. (windows or not)"""
-    if self.IsWindowsJob(self):
+    if self.IsWindowsJob():
       return 'samba'
     else:
       return 'other'

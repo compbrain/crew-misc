@@ -13,7 +13,9 @@ function setstate(row) {
 function AddJob(row) {
   var content = '<td>' + row.id + '</td><td>' + row.physicaldest +
                 '</td><td>' + row.finisher + '</td>' + '<td>' + row.owner
-                + '</td><td>' + row.title + '</td><td>' + row.state + '</td>';
+                + '</td><td><div class="joblogo">' + 
+                '<img src="/static/job-' + row.source + '.png"></div>' + row.title
+                + '</td><td>' + row.state + '</td>';
   if ($('#job-'+row.id).length > 0) {
     $('#job-'+row.id).replaceWith('<tr id="job-'+row.id+'">'+content+'</tr>');
     setstate(row);
