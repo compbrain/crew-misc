@@ -281,7 +281,9 @@ class PrintQueue(object):
 
   def GetPublishedJSON(self, completecount=10):
     j = {'jobs':self.GetPublishedDict(completecount),
-         'status':self.QueueStatus(),
+         'status':[],
+         # Status is broke, takes too long to fetch data
+         #'status':self.QueueStatus(),
         }
     return json.dumps(j)
 
