@@ -281,19 +281,17 @@ class PrintQueue(object):
 
   def GetPublishedJSON(self, completecount=10):
     j = {'jobs':self.GetPublishedDict(completecount),
-         'status':[],
-         # Status is broke, takes too long to fetch data
-         #'status':self.QueueStatus(),
+         'status':self.QueueStatus(),
         }
     return json.dumps(j)
 
   def QueueStatus(self):
     statuslist = []
-    p = cupsext.getPrinters()
+    p = self.CupsConnection().getPrinters()
     for x in p:
-      if x.name in self.AllQueueNames():
-        statuslist.append({'name': x.name,
-                           'status':PrintQueue.STATUSMAP[x.state]})
+      if x in self.AllQueueNames():
+        statuslist.append({'name': x,
+          'status':PrintQueue.STATUSMAP[p[x]['printer-state']]})
     return statuslist
 
 
