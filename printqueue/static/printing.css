@@ -79,3 +79,28 @@ tbody {
 .printer-idle {
   background-color: #88ff77;
 }
+
+/*
+ *     <div id="note">Please print to "102"!</div>
+ *         <div id="footer">
+ *               <span id="dali-info">&#8656; Dali</span>
+ *                     <span id="reiniger-info">&#8658; Reiniger</span>
+ *                         </div>
+ */
+
+#footer {
+  position:relative;
+  font-size:36pt;
+  bottom:0;
+}
+#dali-info {
+  float:left;
+}
+#reiniger-info {
+  float:right;
+}
+#note {
+  font-size:36pt;
+  text-align:center;
+}
+

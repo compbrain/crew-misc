@@ -21,5 +21,14 @@
 <tbody id="joblist">
 </tbody>
     </table>
+    {% ifequal queuename "102" %}
+    <br />
+    <br />
+    <div id="note">Please print to "102"!</div>
+    <div id="footer">
+      <span id="dali-info">&#8656;Dali</span>
+      <span id="reiniger-info">Reiniger&#8658;</span>
+    </div>
+    {% endifequal %}
   </body>
 </html>
