@@ -91,16 +91,19 @@ tbody {
  */
 
 #footer {
-  position:relative;
   font-size:36pt;
-  bottom:0;
 }
 #dali-info {
-  float:left;
+  position:absolute;
+  bottom:0px;
+  left:0px;
 }
 #reiniger-info {
-  float:right;
+  position:absolute;
+  bottom:0px;
+  right:0px;
 }
+
 #note {
   font-size:36pt;
   text-align:center;
