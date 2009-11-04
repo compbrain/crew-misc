@@ -61,6 +61,8 @@ function getData() {
       AddJob(item);
       ids.push(item.id);
       });
+    $('#graph').attr('src', data.graphurl);
+    $('#graph').show();
     cleanUp(ids);
     });
 }

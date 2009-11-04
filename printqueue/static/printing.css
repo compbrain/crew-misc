@@ -109,3 +109,10 @@ tbody {
   text-align:center;
 }
 
+#graph {
+  display:none;
+  text-align:center;
+  display:block;
+  margin-right:auto;
+  margin-left:auto;
+}

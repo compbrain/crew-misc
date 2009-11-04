@@ -234,6 +234,25 @@ class PrintQueue(object):
     self.GetJobsForPrinter()
     self.AddClassMembers()
 
+  def PieChart(self, jobs):
+    """Get a chartserver url for this queue."""
+    users = []
+    for job in jobs:
+      users.append(job['owner'])
+    user_dict = {}
+    for user in users:
+      user_dict.setdefault(user, 0)
+      user_dict[user] += 1
+    labels = []
+    counts = []
+    for key, value in user_dict.iteritems():
+      labels.append(key)
+      counts.append(value)
+    base = 'http://chart.apis.google.com/chart'
+    args = ('cht=p&chd=t:%s&chs=300x150&chl=%s'
+            % (','.join(map(str, counts)), '|'.join(labels)))
+    return '%s?%s' % (base, args)
+
   def CupsConnection(self):
     try:
       if not self.cups:
@@ -283,6 +302,7 @@ class PrintQueue(object):
     j = {'jobs':self.GetPublishedDict(completecount),
          'status':self.QueueStatus(),
         }
+    j['graphurl'] = self.PieChart(j['jobs'])
     return json.dumps(j)
 
   def QueueStatus(self):
