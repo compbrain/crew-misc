@@ -287,7 +287,11 @@ class PrintQueue(object):
     return [job for job in self.alljobs if not job.IsComplete()]
 
   def FinishedJobs(self):
-    return [job for job in self.alljobs if job.IsComplete()]
+    output = []
+    for job in self.alljobs:
+      if job.IsComplete() and job not in output:
+        output.append(job)
+    return output
 
   def GetPublishedJobs(self, completecount=10):
     l = self.PendingJobs() + self.FinishedJobs()[:completecount]
