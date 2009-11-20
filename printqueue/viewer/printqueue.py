@@ -284,7 +284,11 @@ class PrintQueue(object):
     self.alljobs.reverse()
 
   def PendingJobs(self):
-    return [job for job in self.alljobs if not job.IsComplete()]
+    output = []
+    for job in self.alljobs:
+      if not job.IsComplete() and job not in output:
+        output.append(job)
+    return output
 
   def FinishedJobs(self):
     output = []
